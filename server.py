@@ -1,7 +1,8 @@
 import socket, ssl
 
-context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-context.load_cert_chain(certfile="server.crt", keyfile="server.key")
+context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+context.verify_mode = ssl.CERT_REQUIRED
+context.load_cert_chain(certfile="server.pem", keyfile="server.key")
 
 bindsocket = socket.socket()
 bindsocket.bind(('localhost', 10023))
@@ -25,7 +26,14 @@ def do_something(connstream, data):
 
 while True:
     newsocket, fromaddr = bindsocket.accept()
+    print(newsocket)
+    print(fromaddr)
+
     connstream = context.wrap_socket(newsocket, server_side=True)
+    print(connstream)
+
+    print("SSL established. Peer: {}".format(connstream.getpeercert()))
+
     try:
         deal_with_client(connstream)
     finally:

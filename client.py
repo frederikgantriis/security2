@@ -1,7 +1,9 @@
 import ssl, socket
 
 context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
-context.load_verify_locations('server.crt')
+context.verify_mode = ssl.CERT_REQUIRED
+context.load_verify_locations('server.pem')
+context.load_cert_chain(certfile="client.pem", keyfile="client.key")
 
 conn = context.wrap_socket(socket.socket(socket.AF_INET), server_hostname='localhost')
 
@@ -13,5 +15,8 @@ print(cert)
 
 while True:
     msg = input("Enter something: ")
-    conn.sendall(bytes(msg, 'utf-8'))
+
+    # Send data with certificate
+    conn.sendall(msg.encode())
+
 
