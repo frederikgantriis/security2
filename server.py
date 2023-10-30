@@ -1,8 +1,7 @@
 import socket, ssl
 
 context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-context.verify_mode = ssl.CERT_REQUIRED
-context.load_cert_chain(certfile="server.pem", keyfile="server.key")
+context.load_cert_chain(certfile="cert.pem")
 
 bindsocket = socket.socket()
 bindsocket.bind(('localhost', 10023))
@@ -21,18 +20,12 @@ def deal_with_client(connstream):
 
 def do_something(connstream, data):
     # do somehing with the remote user!
-    print(data)
     return False
 
 while True:
     newsocket, fromaddr = bindsocket.accept()
-    print(newsocket)
-    print(fromaddr)
 
     connstream = context.wrap_socket(newsocket, server_side=True)
-    print(connstream)
-
-    print("SSL established. Peer: {}".format(connstream.getpeercert()))
 
     try:
         deal_with_client(connstream)
