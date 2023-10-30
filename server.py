@@ -1,4 +1,7 @@
 import socket, ssl
+import sys
+
+from fl import sum_numbers, recieve_data, add_numbers_to_arr
 
 context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
 context.load_cert_chain(certfile="cert.pem")
@@ -7,29 +10,21 @@ bindsocket = socket.socket()
 bindsocket.bind(('localhost', 10023))
 bindsocket.listen(5)
 
-def deal_with_client(connstream):
-    data = connstream.recv(1024)
-    # empty data means the client is finished with us
-    while data:
-        if not do_something(connstream, data):
-            # we'll assume do_something returns False
-            # when we're finished with client
-            break
-        data = connstream.recv(1024)
-    # finished with client
-
-def do_something(connstream, data):
-    # do somehing with the remote user!
-    return False
+numbers = []
 
 while True:
     newsocket, fromaddr = bindsocket.accept()
-
     connstream = context.wrap_socket(newsocket, server_side=True)
+    numbers = recieve_data(connstream, numbers)
 
-    try:
-        deal_with_client(connstream)
-    finally:
-        connstream.shutdown(socket.SHUT_RDWR)
-        connstream.close()
+    if len(numbers) == 3:
+        sum = sum_numbers(numbers)
+        print(sum)
+        sys.exit(0)
 
+'''
+Task for hospital:
+1. Recieve data from all peers
+2. Compute the sum of the data recieved
+3. Print the sum
+'''
