@@ -1,3 +1,11 @@
+'''
+Task for each peer:
+
+1. Send parts of number to two other peers
+2. compute the sum of the parts recieved from other peers
+3. Send the sum to the hospital
+'''
+
 import random
 import ssl, socket
 import sys
@@ -41,22 +49,24 @@ bindsocket.bind(('localhost', port1))
 bindsocket.listen(5)
 
 def send_message(msg, port):
-    print("Sending: ", msg, "in 10 seconds")
-    time.sleep(10)
+    print("Sending: ", msg)
     
-    conn = client_conn.wrap_socket(socket.socket(socket.AF_INET), server_hostname='localhost')
-    conn.connect(('localhost', port))
+    # Check if the port is open
+    while True:
+        try:
+            conn = client_conn.wrap_socket(socket.socket(socket.AF_INET), server_hostname='localhost')
+            conn.connect(('localhost', port))
+            break
+        except:
+            continue
+
     conn.send(msg.encode())
     conn.close()
 
 def split_number_in_three_uneven(number):
-    number1 = number - random.randint(1, number - 1)
-
-    number = number - number1
-
-    number2 = number - random.randint(1, number - 1)
-
-    number3 = number - number2
+    number1 = number - random.randint(1, number - 1) 
+    number2 = number - random.randint(1, number - number1)
+    number3 = number - number2 - number1
 
     return number1, number2, number3
 
@@ -71,7 +81,6 @@ print("saving: ", number1)
 threading.Thread(target=send_message, args=(str(number2), port2)).start()
 threading.Thread(target=send_message, args=(str(number3), port3)).start()
 
-
 while True:
     newsocket, fromaddr = bindsocket.accept()
     connstream = server_conn.wrap_socket(newsocket, server_side=True)
@@ -82,12 +91,3 @@ while True:
         sum = sum_numbers(numbers)
         send_message(str(sum), hospital_port)
         sys.exit(0)
-
-'''
-Task for each peer:
-
-1. Send parts of number to two other peers
-2. compute the sum of the parts recieved from other peers
-3. Send the sum to the hospital
-'''
-
