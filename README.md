@@ -4,6 +4,8 @@
 
 run the `init.sh` script
 
+note: if the command doesn't work, there is already a certificate I have generated
+
 ## 2. Run the server
 
 run the following command:
