@@ -1,0 +1,1 @@
+zip handin2_frgm.zip *.pdf *.pem *.py init.sh
