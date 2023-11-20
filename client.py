@@ -1,21 +1,23 @@
-'''
+"""
 Task for each peer:
 
 1. Send parts of number to two other peers
 2. compute the sum of the parts recieved from other peers
 3. Send the sum to the hospital
-'''
+"""
 
 import random
-import ssl, socket
+import ssl
+import socket
 import sys
 import threading
-import time
 
-from fl import Peer, recieve_data, sum_numbers
+from fl import Peer, recieve_data, sum_numbers, get_p
 
 numbers = []
-peers = [] 
+peers = []
+
+p = get_p()
 
 port1 = 0
 port2 = 0
@@ -37,7 +39,7 @@ else:
 
 # Context for client
 client_conn = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
-client_conn.load_verify_locations('cert.pem')
+client_conn.load_verify_locations("cert.pem")
 client_conn.verify_mode = ssl.CERT_REQUIRED
 
 # Context for server
@@ -45,17 +47,20 @@ server_conn = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
 server_conn.load_cert_chain(certfile="cert.pem")
 
 bindsocket = socket.socket()
-bindsocket.bind(('localhost', port1))
+bindsocket.bind(("localhost", port1))
 bindsocket.listen(5)
+
 
 def send_message(msg, port):
     print("Sending: ", msg)
-    
+
     # Check if the port is open
     while True:
         try:
-            conn = client_conn.wrap_socket(socket.socket(socket.AF_INET), server_hostname='localhost')
-            conn.connect(('localhost', port))
+            conn = client_conn.wrap_socket(
+                socket.socket(socket.AF_INET), server_hostname="localhost"
+            )
+            conn.connect(("localhost", port))
             break
         except:
             continue
@@ -63,23 +68,26 @@ def send_message(msg, port):
     conn.send(msg.encode())
     conn.close()
 
+
 def split_number_in_three_uneven(number):
-    number1 = number - random.randint(1, number - 1) 
-    number2 = number - random.randint(1, number - number1)
-    number3 = number - number2 - number1
+
+    number1 = random.randint(1, p)
+    number2 = random.randint(1, p)
+    number3 = (number - number1 - number2) % p
 
     return number1, number2, number3
+
 
 msg = input("Enter result from model:")
 
 # Split number in three uneven parts
 number1, number2, number3 = split_number_in_three_uneven(int(msg))
 
-print("saving: ", number1)
+print("saving: ", number3)
 
 # Send msg to the two other peers
-threading.Thread(target=send_message, args=(str(number2), port2)).start()
-threading.Thread(target=send_message, args=(str(number3), port3)).start()
+threading.Thread(target=send_message, args=(str(number1), port2)).start()
+threading.Thread(target=send_message, args=(str(number2), port3)).start()
 
 while True:
     newsocket, fromaddr = bindsocket.accept()
@@ -87,7 +95,7 @@ while True:
     numbers = recieve_data(connstream, numbers)
 
     if len(numbers) == 2:
-        numbers.append(number1)
-        sum = sum_numbers(numbers)
+        numbers.append(number3)
+        sum = sum_numbers(numbers) % p
         send_message(str(sum), hospital_port)
         sys.exit(0)
