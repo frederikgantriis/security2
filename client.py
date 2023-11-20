@@ -96,6 +96,6 @@ while True:
 
     if len(numbers) == 2:
         numbers.append(number3)
-        sum = sum_numbers(numbers) % p
+        sum = sum_numbers(numbers)
         send_message(str(sum), hospital_port)
         sys.exit(0)
