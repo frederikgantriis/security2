@@ -18,7 +18,7 @@ def recieve_data(connstream, numbers):
     data = connstream.recv(1024)
     # empty data means the client is finished with us
     while data:
-        result, numbers = add_numbers_to_arr(connstream, data, numbers)
+        result, numbers = add_numbers_to_arr(data, numbers)
         if not result:
             # we'll assume do_something returns False
             # when we're finished with client
@@ -28,7 +28,7 @@ def recieve_data(connstream, numbers):
     return numbers
 
 
-def add_numbers_to_arr(connstream, data, numbers):
+def add_numbers_to_arr(data, numbers):
     # do somehing with the remote user!
     numbers.append(int(data.decode()))
 
